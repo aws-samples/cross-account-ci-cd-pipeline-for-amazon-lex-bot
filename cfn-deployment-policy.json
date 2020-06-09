@@ -1,0 +1,46 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "lambda:CreateFunction",
+                "lambda:GetFunction",
+                "lambda:InvokeFunction",
+                "lambda:UpdateFunctionCode",
+                "lambda:GetFunctionConfiguration",
+                "lambda:UpdateFunctionConfiguration",
+                "lambda:DeleteFunction",
+                "lambda:PublishLayerVersion",
+                "lambda:GetLayerVersion",
+                "iam:GetRole",
+                "iam:CreateRole",
+                "iam:PutRolePolicy",
+                "iam:GetRolePolicy",  
+                "iam:PassRole",
+                "iam:DeleteRolePolicy",
+                "iam:DeleteRole",
+                "logs:DescribeLogGroups",
+                "logs:CreateLogGroup",
+                "logs:DeleteLogGroup",
+                "cloudformation:CreateChangeSet",
+                "serverlessrepo:GetCloudFormationTemplate",
+                "serverlessrepo:CreateCloudFormationTemplate"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "s3:GetObject",
+                "s3:ListBucket"
+            ],
+            "Resource": [
+                "arn:aws:s3:::{bucket}",
+                "arn:aws:s3:::{bucket}/*",
+                "arn:aws:s3:::awsserverlessrepo-*",
+                "arn:aws:s3:::awsserverlessrepo-*/*"
+            ]
+        }
+    ]
+}

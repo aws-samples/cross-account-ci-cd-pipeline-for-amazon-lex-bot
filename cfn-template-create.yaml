@@ -1,0 +1,138 @@
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: MIT-0
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy of this
+# software and associated documentation files (the "Software"), to deal in the Software
+# without restriction, including without limitation the rights to use, copy, modify,
+# merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+# permit persons to whom the Software is furnished to do so.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+# INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+# PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+# HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+# OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+# SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+AWSTemplateFormatVersion: 2010-09-09
+Description: |
+    Lex bot template deploys:
+        - IAM role for Lex bot import
+
+Parameters:
+    ReleaseVersion:
+        Description: Release number
+        Type: String
+        Default: v0.0.1
+
+    S3Bucket:
+        Description: S3 bucket with artifacts
+        Type: String
+    
+    LexBotName:
+        Description: Lex bot name
+        Type: String
+
+    LexBotAlias:
+        Description: Lex bot alias
+        Type: String
+    
+    LogGroupName:
+        Description: Lex bot log group
+        Type: String
+        Default: '/aws/lex/logs'
+
+    LambdaFunctionName:
+        Description: Lambda function name
+        Type: String
+
+Metadata:
+    AWS::CloudFormation::Interface:
+        ParameterGroups:
+            - Label:
+                default: Deployment Parameters
+              Parameters:
+                  - ReleaseVersion
+                  - S3Bucket
+            - Label:
+                default: Bot Configuration
+              Parameters:
+                  - LexBotName
+                  - LexBotAlias
+                  - LogGroupName
+                  - LambdaFunctionName
+
+Resources:
+
+    DeploymentLambdaRole:
+        Type: AWS::IAM::Role
+        Properties:
+            Path: /
+            AssumeRolePolicyDocument:
+                Version: 2012-10-17
+                Statement:
+                    - Principal:
+                          Service:
+                              - lambda.amazonaws.com
+                      Effect: Allow
+                      Action:
+                          - sts:AssumeRole
+            Policies:
+                - PolicyName: LogsForLambda
+                  PolicyDocument:
+                      Version: 2012-10-17
+                      Statement:
+                          - Effect: Allow
+                            Action:
+                                - logs:CreateLogGroup
+                                - logs:CreateLogStream
+                                - logs:PutLogEvents
+                            Resource:
+                                - !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/*"
+                                - !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/*:*"
+                - PolicyName: S3Bucket
+                  PolicyDocument:
+                      Version: 2012-10-17
+                      Statement:
+                          - Effect: Allow
+                            Action:
+                                - s3:ListBucket
+                                - s3:GetObject
+                                - s3:GetObjectVersion
+                            Resource:
+                                - !Sub "arn:aws:s3:::${S3Bucket}"
+                                - !Sub "arn:aws:s3:::${S3Bucket}/*" 
+                - PolicyName: LexImport
+                  PolicyDocument:
+                      Version: 2012-10-17
+                      Statement:
+                          - Effect: Allow
+                            Action:
+                                - lex:Get*
+                                - lex:Put*
+                                - lex:Create*
+                                - lex:StartImport
+                            Resource: "*"
+                - PolicyName: LambdaPermissions
+                  PolicyDocument:
+                      Version: 2012-10-17
+                      Statement:
+                          - Effect: Allow
+                            Action:
+                                - lambda:AddPermission
+                            Resource:
+                                - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${LambdaFunctionName}"
+                - PolicyName: LexLogGroup
+                  PolicyDocument:
+                      Version: 2012-10-17
+                      Statement:
+                          - Effect: Allow
+                            Action:
+                                - logs:*
+                            Resource:
+                                - !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:${LogGroupName}:*"
+
+Outputs:
+    LexDeploymentRole:
+        Description: Lambda function role for Lex bot deployment
+        Value: !Ref DeploymentLambdaRole

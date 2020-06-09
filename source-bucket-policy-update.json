@@ -1,0 +1,20 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "AWS": [
+                    "arn:aws:iam::{target-account-id}:role/{cloudformation-role}",
+                    "arn:aws:iam::{target-account-id}:role/{lex-deployment-role}"
+                ]
+            },
+            "Action": [
+                "s3:GetObject"
+            ],
+            "Resource": [
+                "arn:aws:s3:::{bucket}/*"
+            ]
+        }
+    ]
+}
