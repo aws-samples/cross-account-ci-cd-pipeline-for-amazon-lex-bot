@@ -23,5 +23,5 @@ phases:
             - aws lambda get-function --function-name $LAMBDA_NAME:$LAMBDA_ALIAS --query 'Code.Location' | xargs wget -O lambda.zip
             - aws s3 cp lambda.zip s3://$S3_BUCKET/lambda.zip
             - BOT_VERSION=$(aws lex-models get-bot-alias --name $BOT_ALIAS --bot-name $BOT_NAME | sed -n '/ *"botVersion". *"/ { s///; s/".*//; p; }')
-            - aws lex-models get-export --name $BOT_NAME --resource-type BOT --resource-version $BOT_VERSION --export-type LEX --resource-version 1 | sed -n '/ *"url". *"/ { s///; s/".*//; p; }' | xargs wget -O lex.zip
+            - aws lex-models get-export --name $BOT_NAME --resource-type BOT --resource-version $BOT_VERSION --export-type LEX | sed -n '/ *"url". *"/ { s///; s/".*//; p; }' | xargs wget -O lex.zip
             - aws s3 cp lex.zip s3://$S3_BUCKET/lex.zip
